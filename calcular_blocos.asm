@@ -64,41 +64,26 @@ convert:
     ret
 
 ;-------------------------------------------------------------------------------------------------------------------
-
-;_start:
-;    call calcular_blocos
-
-    ; Finaliza o programa
-;    mov eax, 1          ; syscall para exit
-;    xor ebx, ebx        ; código de retorno 0
-;    int 0x80
+section .text
+    global calcular_blocos
 
 calcular_blocos:
     push ebp
     mov ebp, esp
 
-    ;Carrega os argumentos da pilha
-    mov eax, [ebp + 8]   ; Tamanho do arquivo
-    mov [tamanho_arquivo], eax   
-
-    mov eax, [ebp + 12]  ; Ponteiro para o vetor
-    mov [vetor], eax     
-
-    mov eax, [ebp + 16]  ; Tamanho do vetor
-    mov [tamanho_vetor], eax   
-
-    ; Inicializa os registradores para o loop
-    mov ecx, [tamanho_vetor]   
-    mov esi, vetor     
+    ; em [ebp + 8] está o tamanho do arquivo
+    mov esi, [ebp + 12]  ; Ponteiro para o vetor de inteiros
+    mov ecx, [ebp + 16]  ; Tamanho do vetor
     mov edx, 0
 
 loop_verifica:
     mov eax, [esi]       ; endereço inicial do bloco
-    mov ebx, [esi + 4]   ; tamanho do bloco
-    add edx, ebx         ; Ao final do loop, terá o espaço total disponível para o armazenamento
+    mov ebx, [esi + 4]   ; tamanho de memória disponível no bloco
+   
+    add edx, ebx         ; Ao final do loop, edx terá o espaço total disponível para o armazenamento
 
-    ; Verifica se o programa cabe inteiro no bloco atual
-    cmp dword [tamanho_arquivo], ebx
+    ; Verifica se o arquivo cabe inteiro no bloco atual
+    cmp dword [ebp + 8], ebx
     jbe cabe_inteiro 
 
     ; Avança para o próximo bloco
@@ -107,8 +92,8 @@ loop_verifica:
     ; Se o loop terminar, o programa não cabe inteiro em nenhum bloco e terá que ser dividido   
     loop loop_verifica 
     
-    ; Se o tamanho do programa for menor que o espaço total disponíve, ele pode ser dividido
-    cmp dword [tamanho_arquivo], edx
+    ; Se o tamanho do arquivo for menor que o espaço total disponível, ele pode ser dividido
+    cmp dword [ebp + 8], edx
     jbe dividir_arquivo
 
     mov eax, 4               ; write
@@ -124,21 +109,16 @@ loop_verifica:
     int 0x80
 
     ; fim da função
-    ; mov esp, ebp
-    ; pop ebp
-    ; ret
-
-    ; Finaliza o programa
-    mov eax, 1          ; syscall para exit
-    xor ebx, ebx        ; código de retorno 0
-    int 0x80
+    mov esp, ebp
+    pop ebp
+    ret
 
 ;-------------------------------------------------------------------------------------------------------------------
 
 cabe_inteiro:
     ; Calcula o endereço final do arquivo no bloco
     mov ebx, eax         
-    add ebx, [tamanho_arquivo] 
+    add ebx, [ebp + 8] 
     sub ebx, 1 ; O endereço inicial conta para o armazenamento, então se o bloco tem 10 espaços vagos e começa no endereço 500, o endereço final será 509 e não 510
 
     push ebx                 ; ebx = fim do bloco
@@ -181,14 +161,9 @@ cabe_inteiro:
     int 0x80
 
     ; fim da função
-    ; mov esp, ebp
-    ; pop ebp
-    ; ret
-
-    ; Finaliza o programa
-    mov eax, 1          ; syscall para exit
-    xor ebx, ebx        ; código de retorno 0
-    int 0x80
+    mov esp, ebp
+    pop ebp
+    ret
 
 ;-------------------------------------------------------------------------------------------------------------------
 
@@ -205,9 +180,9 @@ dividir_arquivo:
     mov edx, 1               ; n bytes
     int 0x80
 
-    mov ecx, [tamanho_vetor]   
-    mov esi, vetor
-    mov edx, [tamanho_arquivo]  
+    mov edx, [ebp + 8]       ; tamanho do arquivo
+    mov esi, [ebp + 12]      ; ponteiro do vetor
+    mov ecx, [ebp + 16]      ; tamanho do vetor
 
 loop_divide:
     mov eax, [esi]        ; endereço inicial do bloco
@@ -315,15 +290,9 @@ bloco_final:
     mov edx, 1               ; n bytes
     int 0x80
 
-
     ; fim da função
-    ; mov esp, ebp
-    ; pop ebp
-    ; ret
-
-    ; Finaliza o programa
-    mov eax, 1          ; syscall para exit
-    xor ebx, ebx        ; código de retorno 0
-    int 0x80
+    mov esp, ebp
+    pop ebp
+    ret
 
 ;-------------------------------------------------------------------------------------------------------------------

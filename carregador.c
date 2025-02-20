@@ -13,15 +13,15 @@ int main(int argc, char* argv[]) {
         printf("Mais argumentos do que o necessário");
         return 1;
     } else if ((argc - 2) % 2 != 0) {
-        printf("Argumentos insuficientes para carregar o programa na memória");
+        printf("Argumentos faltando para carregar o programa na memória");
         return 1;
     }
 
     // Tamanho do programa (primeiro argumento)
-    int tamanho_arquivo = atoi(argv[1]);
+    int tamanho_arquivo = atoi(argv[1]);    // Ex, ./carregador 125 500 100 700 50. tamanho_arquivo = 125
 
-    // Número de blocos de memória
-    int tamanho_vetor = (argc - 2) / 2;
+    // Número de blocos de memória (endereço e tamanho)
+    int tamanho_vetor = (argc - 2) / 2;    // Ex, ./carregador 125 500 100 700 50. tamanho_vetor = 2
 
     // Aloca memória para armazenar os blocos (endereço e tamanho)
     int* vetor = malloc(tamanho_vetor * 2 * sizeof(int));
